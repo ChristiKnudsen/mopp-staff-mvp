@@ -1,3 +1,4 @@
+import { useActionSheet } from "@expo/react-native-action-sheet";
 import { useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
 
@@ -29,20 +30,29 @@ function statusLabel(status: StaffStatus) {
   return "Holiday";
 }
 
-function nextStatus(status: StaffStatus): StaffStatus {
-  if (status === "AVAILABLE") return "STANDBY";
-  if (status === "STANDBY") return "HOLIDAY";
-  return "AVAILABLE";
-}
-
 export default function StaffWallScreen() {
+  const { showActionSheetWithOptions } = useActionSheet();
   const [staff, setStaff] = useState<StaffMember[]>(START_STAFF);
 
-  function cycleStatus(id: string) {
-    setStaff((prev) =>
-      prev.map((m) =>
-        m.id === id ? { ...m, status: nextStatus(m.status) } : m,
-      ),
+  function setStatus(id: string, status: StaffStatus) {
+    setStaff((prev) => prev.map((m) => (m.id === id ? { ...m, status } : m)));
+  }
+
+  function openStatusMenu(member: StaffMember) {
+    const options = ["Available", "Standby", "Holiday", "Cancel"];
+    const cancelButtonIndex = 3;
+
+    showActionSheetWithOptions(
+      {
+        title: `Set status for ${member.name}`,
+        options,
+        cancelButtonIndex,
+      },
+      (selectedIndex) => {
+        if (selectedIndex === 0) setStatus(member.id, "AVAILABLE");
+        if (selectedIndex === 1) setStatus(member.id, "STANDBY");
+        if (selectedIndex === 2) setStatus(member.id, "HOLIDAY");
+      },
     );
   }
 
@@ -50,7 +60,7 @@ export default function StaffWallScreen() {
     <View style={{ flex: 1, padding: 16, paddingTop: 24 }}>
       <Text style={{ fontSize: 28, fontWeight: "700" }}>Staff</Text>
       <Text style={{ marginTop: 6, fontSize: 16, opacity: 0.7 }}>
-        Tap a person to change status
+        Tap a person to choose their status
       </Text>
 
       <FlatList
@@ -68,7 +78,7 @@ export default function StaffWallScreen() {
               alignItems: "center",
               gap: 12,
             }}
-            onPress={() => cycleStatus(item.id)}
+            onPress={() => openStatusMenu(item)}
           >
             <View
               style={{
