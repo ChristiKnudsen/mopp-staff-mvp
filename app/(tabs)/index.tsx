@@ -356,6 +356,8 @@ export default function StaffWallScreen() {
               >
                 <Picker.Item label="Available" value="AVAILABLE" />
                 <Picker.Item label="Standby" value="STANDBY" />
+                <Picker.Item label="Occupied" value="OCCUPIED" />
+                <Picker.Item label="Not Available" value="NOT_AVAILABLE" />
                 <Picker.Item label="Holiday" value="HOLIDAY" />
               </Picker>
             </View>
