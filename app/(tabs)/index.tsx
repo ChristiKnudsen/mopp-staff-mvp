@@ -13,7 +13,12 @@ import {
   View,
 } from "react-native";
 
-type StaffStatus = "AVAILABLE" | "STANDBY" | "HOLIDAY";
+type StaffStatus =
+  | "AVAILABLE"
+  | "STANDBY"
+  | "OCCUPIED"
+  | "NOT_AVAILABLE"
+  | "HOLIDAY";
 
 type StaffMember = {
   id: string;
@@ -41,6 +46,8 @@ function initials(name: string) {
 function statusLabel(status: StaffStatus) {
   if (status === "AVAILABLE") return "Available";
   if (status === "STANDBY") return "Standby";
+  if (status === "OCCUPIED") return "Occupied";
+  if (status === "NOT_AVAILABLE") return "Not Available";
   return "Holiday";
 }
 
@@ -69,12 +76,12 @@ export default function StaffWallScreen() {
       try {
         const raw = await AsyncStorage.getItem(STORAGE_KEY);
         if (!raw) return;
+
         const saved = JSON.parse(raw) as StaffMember[];
         if (Array.isArray(saved) && saved.length > 0) {
           setStaff(saved);
         }
       } catch (e) {
-        // If storage is broken, we just keep defaults
         console.log("Failed to load staff:", e);
       }
     })();
@@ -172,64 +179,38 @@ export default function StaffWallScreen() {
     if (uri) setDraftPhotoUri(uri);
   }
 
-  // Optional: a reset button if you ever want to go back to default
-  async function resetToDefault() {
-    Alert.alert("Reset staff list?", "This will restore the default list.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Reset",
-        style: "destructive",
-        onPress: async () => {
-          await AsyncStorage.removeItem(STORAGE_KEY);
-          setStaff(START_STAFF);
-        },
-      },
-    ]);
-  }
-
   return (
     <View style={{ flex: 1, padding: 16, paddingTop: 24 }}>
-      {/* Header */}
+      {/* Header - fixed so + Add doesn't get cut off */}
       <View
         style={{
           flexDirection: "row",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "space-between",
           gap: 12,
         }}
       >
-        <View>
+        <View style={{ flex: 1, paddingRight: 8 }}>
           <Text style={{ fontSize: 28, fontWeight: "700" }}>Staff</Text>
           <Text style={{ marginTop: 6, fontSize: 16, opacity: 0.7 }}>
             Add, edit, and manage availability
           </Text>
         </View>
 
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <Pressable
-            onPress={resetToDefault}
-            style={{
-              borderWidth: 1,
-              borderRadius: 999,
-              paddingVertical: 10,
-              paddingHorizontal: 14,
-            }}
-          >
-            <Text style={{ fontSize: 16, fontWeight: "700" }}>Reset</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={openAdd}
-            style={{
-              borderWidth: 1,
-              borderRadius: 999,
-              paddingVertical: 10,
-              paddingHorizontal: 14,
-            }}
-          >
-            <Text style={{ fontSize: 16, fontWeight: "700" }}>+ Add</Text>
-          </Pressable>
-        </View>
+        <Pressable
+          onPress={openAdd}
+          style={{
+            borderWidth: 1,
+            borderRadius: 999,
+            paddingVertical: 10,
+            paddingHorizontal: 14,
+            minWidth: 84,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text style={{ fontSize: 16, fontWeight: "700" }}>+ Add</Text>
+        </Pressable>
       </View>
 
       {/* List */}
@@ -352,7 +333,7 @@ export default function StaffWallScreen() {
             >
               <Picker
                 selectedValue={draftStatus}
-                onValueChange={(value) => setDraftStatus(value)}
+                onValueChange={(value) => setDraftStatus(value as StaffStatus)}
               >
                 <Picker.Item label="Available" value="AVAILABLE" />
                 <Picker.Item label="Standby" value="STANDBY" />
@@ -369,6 +350,7 @@ export default function StaffWallScreen() {
                 alignItems: "center",
                 gap: 12,
                 marginTop: 8,
+                flexWrap: "wrap",
               }}
             >
               {draftPhotoUri ? (
