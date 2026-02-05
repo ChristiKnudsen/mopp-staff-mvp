@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { Pressable, Text, TextInput, View } from "react-native";
 
 export default function LoginScreen() {
@@ -37,7 +38,7 @@ export default function LoginScreen() {
           padding: 14,
           alignItems: "center",
         }}
-        onPress={() => {}}
+        onPress={() => router.replace("/(tabs)")}
       >
         <Text style={{ fontSize: 16, fontWeight: "600" }}>Log in</Text>
       </Pressable>

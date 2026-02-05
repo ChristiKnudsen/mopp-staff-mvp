@@ -1,98 +1,98 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { FlatList, Pressable, Text, View } from "react-native";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+type StaffStatus = "AVAILABLE" | "STANDBY" | "HOLIDAY";
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+type StaffMember = {
+  id: string;
+  name: string;
+  status: StaffStatus;
+};
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+const STAFF: StaffMember[] = [
+  { id: "1", name: "Mouna", status: "AVAILABLE" },
+  { id: "2", name: "Fatima", status: "STANDBY" },
+  { id: "3", name: "Jonas", status: "HOLIDAY" },
+  { id: "4", name: "Linda", status: "AVAILABLE" },
+];
+
+function initials(name: string) {
+  const parts = name.trim().split(" ");
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+  return (first + last).toUpperCase();
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+function statusLabel(status: StaffStatus) {
+  if (status === "AVAILABLE") return "Available";
+  if (status === "STANDBY") return "Standby";
+  return "Holiday";
+}
+
+export default function StaffWallScreen() {
+  return (
+    <View style={{ flex: 1, padding: 16, paddingTop: 24 }}>
+      <Text style={{ fontSize: 28, fontWeight: "700" }}>Staff</Text>
+      <Text style={{ marginTop: 6, fontSize: 16, opacity: 0.7 }}>
+        Who is available today?
+      </Text>
+
+      <FlatList
+        style={{ marginTop: 16 }}
+        data={STAFF}
+        keyExtractor={(item) => item.id}
+        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        renderItem={({ item }) => (
+          <Pressable
+            style={{
+              borderWidth: 1,
+              borderRadius: 16,
+              padding: 14,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+            }}
+            onPress={() => {}}
+          >
+            {/* Avatar (initials) */}
+            <View
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: 26,
+                borderWidth: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text style={{ fontSize: 18, fontWeight: "700" }}>
+                {initials(item.name)}
+              </Text>
+            </View>
+
+            {/* Name + status */}
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 18, fontWeight: "600" }}>
+                {item.name}
+              </Text>
+
+              <View style={{ marginTop: 6, flexDirection: "row", gap: 8 }}>
+                <View
+                  style={{
+                    borderWidth: 1,
+                    borderRadius: 999,
+                    paddingVertical: 4,
+                    paddingHorizontal: 10,
+                  }}
+                >
+                  <Text style={{ fontSize: 14, fontWeight: "600" }}>
+                    {statusLabel(item.status)}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </Pressable>
+        )}
+      />
+    </View>
+  );
+}
