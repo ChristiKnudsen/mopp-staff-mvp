@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
 
 type StaffStatus = "AVAILABLE" | "STANDBY" | "HOLIDAY";
@@ -8,7 +9,7 @@ type StaffMember = {
   status: StaffStatus;
 };
 
-const STAFF: StaffMember[] = [
+const START_STAFF: StaffMember[] = [
   { id: "1", name: "Mouna", status: "AVAILABLE" },
   { id: "2", name: "Fatima", status: "STANDBY" },
   { id: "3", name: "Jonas", status: "HOLIDAY" },
@@ -28,17 +29,33 @@ function statusLabel(status: StaffStatus) {
   return "Holiday";
 }
 
+function nextStatus(status: StaffStatus): StaffStatus {
+  if (status === "AVAILABLE") return "STANDBY";
+  if (status === "STANDBY") return "HOLIDAY";
+  return "AVAILABLE";
+}
+
 export default function StaffWallScreen() {
+  const [staff, setStaff] = useState<StaffMember[]>(START_STAFF);
+
+  function cycleStatus(id: string) {
+    setStaff((prev) =>
+      prev.map((m) =>
+        m.id === id ? { ...m, status: nextStatus(m.status) } : m,
+      ),
+    );
+  }
+
   return (
     <View style={{ flex: 1, padding: 16, paddingTop: 24 }}>
       <Text style={{ fontSize: 28, fontWeight: "700" }}>Staff</Text>
       <Text style={{ marginTop: 6, fontSize: 16, opacity: 0.7 }}>
-        Who is available today?
+        Tap a person to change status
       </Text>
 
       <FlatList
         style={{ marginTop: 16 }}
-        data={STAFF}
+        data={staff}
         keyExtractor={(item) => item.id}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         renderItem={({ item }) => (
@@ -51,9 +68,8 @@ export default function StaffWallScreen() {
               alignItems: "center",
               gap: 12,
             }}
-            onPress={() => {}}
+            onPress={() => cycleStatus(item.id)}
           >
-            {/* Avatar (initials) */}
             <View
               style={{
                 width: 52,
@@ -69,7 +85,6 @@ export default function StaffWallScreen() {
               </Text>
             </View>
 
-            {/* Name + status */}
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 18, fontWeight: "600" }}>
                 {item.name}
